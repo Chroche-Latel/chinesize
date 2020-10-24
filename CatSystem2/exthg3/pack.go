@@ -92,26 +92,6 @@ func queryTable(val uint32) (v1, v2, v3, v4 byte) {
 	return
 }
 
-func rgbaCvt(dib []byte, width, height, depthBytes uint32) (out []byte) {
-	out = make([]byte, len(dib))
-	secLen := width * height * depthBytes / 4
-	sec1 := out
-	sec2 := out[secLen:]
-	sec3 := out[secLen*2:]
-	sec4 := out[secLen*3:]
-	p := dib
-	for i := 0; i < int(secLen); i++ {
-		val := packVal(p[0]) | (packVal(p[1]) << 8) | (packVal(p[2]) << 16) | (packVal(p[3]) << 24)
-		v1, v2, v3, v4 := queryTable(val)
-		sec1[i] = v1
-		sec2[i] = v2
-		sec3[i] = v3
-		sec4[i] = v4
-		p = p[4:]
-	}
-	return
-}
-
 func writeBitLen(stm *bstream.BStream, l uint32) {
 	if l == 0 {
 		panic("error bit len")
