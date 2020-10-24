@@ -154,7 +154,6 @@ func readImageToBuff(stdInfo *SecStdinfo, imgInfo *SecImg, fname string) (
 	}
 
 	dib = diffImage(dib, stdInfo.Width, stdInfo.Height, stdInfo.BitDepth/8)
-	dib = rgbaCvt(dib, stdInfo.Width, stdInfo.Height, stdInfo.BitDepth/8)
 	content, ctrl := doRLE(dib)
 	newImgInfo.DataUncLen = uint32(len(content))
 	newImgInfo.CtrlUncLen = uint32(len(ctrl))
