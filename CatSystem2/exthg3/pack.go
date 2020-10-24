@@ -238,9 +238,6 @@ func genBlockWithImage(block *blockRecord, blockID int, pathPrefix string) (out 
 				return
 			}
 			secInfo.SecLength = uint32(binary.Size(newImgInfo) + len(imgbf))
-			if idx+1 != len(block.Sections)-1 {
-				secInfo.NextOffset = secInfo.SecLength + uint32(binary.Size(secInfo))
-			}
 			binary.Write(&writer, binary.LittleEndian, &secInfo)
 			binary.Write(&writer, binary.LittleEndian, &newImgInfo)
 			writer.Write(imgbf)
