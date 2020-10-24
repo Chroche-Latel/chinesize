@@ -112,7 +112,7 @@ func getFilterTable() (tbl [][256]uint32) {
 }
 
 func unDeltaFilter(buff []byte, width, height, depthBytes uint32) (out []byte) {
-	if depthBytes != 4 && depthBytes != 3 {
+	if depthBytes != 4 {
 		log.Fatalf("depth bytes error:%d", depthBytes)
 	}
 	table := getFilterTable()
@@ -236,32 +236,10 @@ func write32DibToPng(dib []byte, width, height int, out io.Writer) (err error) {
 	return
 }
 
-func write24DibToPng(dib []byte, width, height int, out io.Writer) (err error) {
-	if len(dib) < int(width*height*3) {
-		err = fmt.Errorf("dib size error")
-		return
-	}
-	canvas := image.NewNRGBA(image.Rect(0, 0, width, height))
-	stride := width * 3
-	for y := 0; y < height; y++ {
-		line := dib[y*stride:]
-		for x := 0; x < width; x++ {
-			canvas.Set(x, height-y-1, color.NRGBA{
-				B: line[x*3],
-				G: line[x*3+1],
-				R: line[x*3+2],
-				A: 255,
-			})
-		}
-	}
-	err = png.Encode(out, canvas)
-	return
-}
-
 func extractAnImage(reader io.Reader, stdInfo *SecStdinfo, imgInfo *SecImg,
 	out io.Writer) (err error) {
-	if stdInfo.BitDepth != 32 && stdInfo.BitDepth != 24 {
-		err = fmt.Errorf("only support 32/24 bit image, this is %d", stdInfo.BitDepth)
+	if stdInfo.BitDepth != 32 {
+		err = fmt.Errorf("only support 32-bit image")
 		return
 	}
 	if stdInfo.Height != imgInfo.Height {
@@ -278,11 +256,7 @@ func extractAnImage(reader io.Reader, stdInfo *SecStdinfo, imgInfo *SecImg,
 	}
 	dib1 := unRLE(uncData, uncCtrl)
 	dib2 := unDeltaFilter(dib1, stdInfo.Width, stdInfo.Height, stdInfo.BitDepth/8)
-	if stdInfo.BitDepth == 32 {
-		err = write32DibToPng(dib2, int(stdInfo.Width), int(stdInfo.Height), out)
-	} else {
-		err = write24DibToPng(dib2, int(stdInfo.Width), int(stdInfo.Height), out)
-	}
+	err = write32DibToPng(dib2, int(stdInfo.Width), int(stdInfo.Height), out)
 	return
 }
 
@@ -451,10 +425,8 @@ func main() {
 	hasError := false
 	if *isExtract {
 		hasError = extractHG3(*inputName, output)
-		fmt.Printf("complete")
 	} else {
 		hasError = packImagesToHG3(*inputName, output)
-		fmt.Printf("complete")
 	}
 	if hasError {
 		exitCode = 1
